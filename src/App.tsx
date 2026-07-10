@@ -5,6 +5,7 @@ import type { TrackerGroup } from './components/layout/Sidebar'
 import MapContainer from './components/layout/MapContainer'
 import InsightPanel from './components/layout/InsightPanel'
 import type { Insight } from './components/layout/InsightPanel'
+import './App.scss'
 
 const pathogens: TrackerGroup = {
   items: [
@@ -12,8 +13,13 @@ const pathogens: TrackerGroup = {
     { id: 'rsv', label: 'RSV' },
     { id: 'flu-a', label: 'Influenza A' },
     { id: 'norovirus', label: 'Norovirus' },
+    { id: 'flu-b', label: 'Influenza B' },
+    { id: 'adenovirus', label: 'Adenovirus' },
+    { id: 'enterovirus', label: 'Enterovirus' },
+    { id: 'rhinovirus', label: 'Rhinovirus' },
+    { id: 'parainfluenza', label: 'Parainfluenza' },
+    { id: 'rotavirus', label: 'Rotavirus' },
   ],
-  moreCount: 16,
 }
 
 const drugs: TrackerGroup = {
@@ -22,8 +28,11 @@ const drugs: TrackerGroup = {
     { id: 'cocaine', label: 'Cocaine' },
     { id: 'meth', label: 'Methamphetamine' },
     { id: 'heroin', label: 'Heroin' },
+    { id: 'xylazine', label: 'Xylazine' },
+    { id: 'mdma', label: 'MDMA' },
+    { id: 'oxycodone', label: 'Oxycodone' },
+    { id: 'benzodiazepines', label: 'Benzodiazepines' },
   ],
-  moreCount: 21,
 }
 
 const risk: Insight = {
@@ -63,23 +72,6 @@ export default function App() {
         <MapContainer />
         <InsightPanel risk={risk} forecast={forecast} />
       </div>
-
-      <style>{`
-        .app {
-          min-height: 100%;
-          background: var(--bg-vignette);
-        }
-        .app-body {
-          display: grid;
-          grid-template-columns: 260px 1fr 320px;
-          align-items: start;
-        }
-        @media (max-width: 1100px) {
-          .app-body {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   )
 }
