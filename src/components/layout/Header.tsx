@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import ThemeToggle from '../ui/ThemeToggle'
+// Theme switching is on hold for now — re-enable by uncommenting this
+// import and the <ThemeToggle /> usage below.
+// import ThemeToggle from '../ui/ThemeToggle'
 import './Header.scss'
 
 export default function Header() {
@@ -36,7 +38,7 @@ export default function Header() {
       </div>
 
       <div className="header-controls">
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
         <button className="menu-button" aria-label="Open menu">
           <span />
           <span />

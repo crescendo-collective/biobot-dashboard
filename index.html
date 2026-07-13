@@ -7,12 +7,12 @@
     <script>
       // Runs before React mounts so there's no flash of the wrong
       // theme on load. Kept in sync with ThemeContext.tsx's storage key.
+      // Theme switching is on hold, so default is dark (no OS-preference
+      // fallback for now) — see the matching comment in ThemeContext.tsx.
       (function () {
         try {
           var stored = localStorage.getItem('dashboard-theme');
-          var theme = stored === 'light' || stored === 'dark'
-            ? stored
-            : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          var theme = stored === 'light' || stored === 'dark' ? stored : 'dark';
           document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {}
       })();

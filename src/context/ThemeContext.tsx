@@ -16,12 +16,15 @@ const STORAGE_KEY = 'dashboard-theme'
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark'
 
+  // Theme switching is on hold for now (toggle UI is commented out in
+  // Header.tsx), so default to dark regardless of OS preference.
+  // Once the toggle comes back, uncomment the matchMedia fallback below.
   const stored = window.localStorage.getItem(STORAGE_KEY)
   if (stored === 'dark' || stored === 'light') return stored
 
-  // Fall back to the OS preference the first time a visitor shows up.
-  const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches
-  return prefersLight ? 'light' : 'dark'
+  return 'dark'
+  // const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches
+  // return prefersLight ? 'light' : 'dark'
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
