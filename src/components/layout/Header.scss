@@ -114,16 +114,3 @@
   justify-self: end;
   gap: 24px;
 }
-
-.menu-button {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 26px;
-
-  span {
-    height: 1px;
-    background: var(--text);
-    width: 100%;
-  }
-}

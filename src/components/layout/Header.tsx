@@ -37,11 +37,6 @@ export default function Header() {
 
       <div className="header-controls">
          <ThemeToggle />
-        <button className="menu-button" aria-label="Open menu">
-          <span />
-          <span />
-          <span />
-        </button>
       </div>
     </header>
   )
