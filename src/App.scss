@@ -8,10 +8,37 @@
 .app-body {
   display: grid;
   grid-template-columns: 230px 1fr 320px;
+  grid-template-areas: "sidebar map insight";
   align-items: start;
 
   @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: 200px 1fr;
+    grid-template-areas:
+      "sidebar map"
+      "insight insight";
     row-gap: 8px;
   }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 150px 1fr;
+  }
+
+  @media (max-width: 400px) {
+    grid-template-columns: 120px 1fr;
+  }
+}
+
+// Grid-area assignment lives here rather than in each component's own
+// stylesheet, since it's about this layout's composition, not the
+// component's own styling.
+.sidebar {
+  grid-area: sidebar;
+}
+
+.map-container {
+  grid-area: map;
+}
+
+.insight-panel {
+  grid-area: insight;
 }
