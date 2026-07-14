@@ -41,7 +41,6 @@ export interface InsightPanelProps {
 export default function InsightPanel({ risk, forecast }: InsightPanelProps) {
   return (
     <aside className="insight-panel">
-      <div className="insight-rail" />
       <div className="insight-stack">
         <InsightCard {...risk} tone="risk" />
         <InsightCard {...forecast} tone="forecast" />

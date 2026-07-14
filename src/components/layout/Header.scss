@@ -107,8 +107,8 @@
 
 .header-controls {
   // Theme switching is on hold for now — re-enable by uncommenting this
-  display: none;
-  //display: flex;
+  //display: none;
+  display: flex;
   align-items: center;
   justify-content: flex-end;
   justify-self: end;
