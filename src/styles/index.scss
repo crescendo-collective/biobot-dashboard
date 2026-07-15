@@ -47,6 +47,27 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
+/* Risk-tier scale (theme-independent) — single source of truth for both
+   the map's county fill (vivid) and the tooltip's pill badges (soft).
+   Previously these were two hand-maintained hex palettes (one in
+   colors.ts, one in MapToolTip.scss) with no "Severe" entry in either. */
+:root {
+  --tier-minimal: #5af801;
+  --tier-low: #f7df00;
+  --tier-moderate: #fa4f01;
+  --tier-high: #a50100;
+  --tier-very-high: #42002d;
+  --tier-severe: #1a0014;
+  --tier-no-data: #c2c2c2;
+
+  --tier-minimal-soft: #dff7b3;
+  --tier-low-soft: #eef8b7;
+  --tier-moderate-soft: #ffe58d;
+  --tier-high-soft: #ffbe72;
+  --tier-very-high-soft: #ff9d9d;
+  --tier-severe-soft: #cf9bb0;
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root {

@@ -1,0 +1,150 @@
+{
+  "data": [
+    {
+      "date": [
+        "2026-04-29"
+      ],
+      "target_name": "RSV",
+      "county_fips": "01073",
+      "county_name": "Jefferson County",
+      "state_abbr": "AL",
+      "urban_area_name": "Birmingham, AL",
+      "biobot_risk_tier": [
+        2
+      ],
+      "biobot_trend": [
+        2
+      ],
+      "hotspot_rank": [
+        102
+      ],
+      "perc_change": [
+        -14.49760156109615
+      ],
+      "ua_pop": [
+        774956
+      ],
+      "census_region": 2
+    },
+    {
+      "date": [
+        "2026-04-29"
+      ],
+      "target_name": "RSV",
+      "county_fips": "01089",
+      "county_name": "Madison County",
+      "state_abbr": "AL",
+      "urban_area_name": "Huntsville Southeast, AL",
+      "biobot_risk_tier": [
+        3
+      ],
+      "biobot_trend": [
+        2
+      ],
+      "hotspot_rank": [
+        99
+      ],
+      "perc_change": [
+        -16.74179762437774
+      ],
+      "ua_pop": [
+        20165
+      ],
+      "census_region": 2
+    },
+    {
+      "date": [
+        "2026-04-29"
+      ],
+      "target_name": "RSV",
+      "county_fips": "01089",
+      "county_name": "Madison County",
+      "state_abbr": "AL",
+      "urban_area_name": "Huntsville, AL",
+      "biobot_risk_tier": [
+        3
+      ],
+      "biobot_trend": [
+        2
+      ],
+      "hotspot_rank": [
+        99
+      ],
+      "perc_change": [
+        -16.74179762437774
+      ],
+      "ua_pop": [
+        329066
+      ],
+      "census_region": 2
+    },
+    {
+      "date": [
+        "2026-04-29"
+      ],
+      "target_name": "RSV",
+      "county_fips": "01097",
+      "county_name": "Mobile County",
+      "state_abbr": "AL",
+      "urban_area_name": "Mobile, AL",
+      "biobot_risk_tier": [
+        2
+      ],
+      "biobot_trend": [
+        2
+      ],
+      "hotspot_rank": [
+        161
+      ],
+      "perc_change": [
+        -32.10110206202713
+      ],
+      "ua_pop": [
+        321907
+      ],
+      "census_region": 2
+    }
+  ],
+  "pivot": {
+    "columns": [
+      "date",
+      "biobot_risk_tier",
+      "biobot_trend",
+      "hotspot_rank",
+      "perc_change",
+      "ua_pop"
+    ],
+    "sortBy": [
+      "date",
+      "target_name",
+      "hotspot_rank",
+      "county_fips",
+      "urban_area_name"
+    ],
+    "values": {
+      "biobot_risk_tier": [
+        null,
+        "Minimal",
+        "Low",
+        "Moderate",
+        "High",
+        "Very High",
+        "Severe"
+      ],
+      "biobot_trend": [
+        null,
+        "Unknown",
+        "Decreasing",
+        "Stable",
+        "Increasing"
+      ],
+      "census_region": [
+        "Midwest",
+        "Northeast",
+        "South",
+        "US Territories",
+        "West"
+      ]
+    }
+  }
+}

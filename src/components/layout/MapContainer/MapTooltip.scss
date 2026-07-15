@@ -1,0 +1,67 @@
+.map-tooltip {
+  position: absolute;
+  min-width: 250px;
+  padding: 18px;
+  border-radius: 14px;
+  background: white;
+  // The tooltip card is intentionally always-white regardless of theme
+  // (matches the reference design), but that means it can't rely on
+  // var(--text) for its own text color — in dark theme that resolves
+  // to near-white, which is unreadable on a white card. Pinned here.
+  color: #1a1a1a;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: 0.18s;
+  z-index: 100;
+}
+
+.map-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.map-tooltip h3 {
+  margin: 0 0 18px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+.pill.minimal {
+  background: var(--tier-minimal-soft);
+}
+
+.pill.low {
+  background: var(--tier-low-soft);
+}
+
+.pill.moderate {
+  background: var(--tier-moderate-soft);
+}
+
+.pill.high {
+  background: var(--tier-high-soft);
+}
+
+.pill.very-high {
+  background: var(--tier-very-high-soft);
+}
+
+// Was missing — BiobotRiskTier didn't include 'Severe' until this
+// cleanup, so there was nowhere for this rule to matter yet. Data from
+// data.pcrCountyHotspots.json confirms 'Severe' is a real tier value.
+.pill.severe {
+  background: var(--tier-severe-soft);
+  color: white;
+}
