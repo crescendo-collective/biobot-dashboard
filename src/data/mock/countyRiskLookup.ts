@@ -1,57 +1,60 @@
-import type { CountyData } from '../../types/map'
+import type { CountyData } from '@/types/map'
+import { feature } from "topojson-client";
+import us from "us-atlas/counties-10m.json";
+import type {GeometryCollection, Topology} from "topojson-specification";
 
-// Temporary stand-in for the real /beta/data/rsv/county endpoint (see
-// the Biobot Analytics Postman collection) — three counties, enough to
-// exercise the map's hover/tooltip/color-fill logic before the real
-// fetch is wired up. Counties not in this map render with the "no data"
-// fallback fill (see colors.ts). Swap this file for a real fetch() call
-// once the endpoint is connected; MapContainer only depends on getting
-// back a `Map<string, CountyData>` keyed by FIPS, so nothing downstream
-// needs to change.
-export const countyRiskLookup = new Map<string, CountyData>([
-  [
-    '06037',
-    {
-      county_fips: '06037',
-      county_name: 'Los Angeles County',
-      state_abbr: 'CA',
-      date: '2024-06-12',
-      biobot_risk_tier: 'High',
-      ordinal_risk_tier: 4,
-      biobot_trend: 'Increasing',
-      perc_change: 27.4,
-      effective_conc_copies_per_l_predicted: 1234,
-      is_forecast: false,
-    },
-  ],
-  [
-    '01001',
-    {
-      county_fips: '01001',
-      county_name: 'Autauga County',
-      state_abbr: 'AL',
-      date: '2024-06-12',
-      biobot_risk_tier: 'Low',
-      ordinal_risk_tier: 2,
-      biobot_trend: 'Stable',
-      perc_change: -3.2,
-      effective_conc_copies_per_l_predicted: 820,
-      is_forecast: false,
-    },
-  ],
-  [
-    '17031',
-    {
-      county_fips: '17031',
-      county_name: 'Cook County',
-      state_abbr: 'IL',
-      date: '2024-06-12',
-      biobot_risk_tier: 'Moderate',
-      ordinal_risk_tier: 3,
-      biobot_trend: 'Increasing',
-      perc_change: 12.6,
-      effective_conc_copies_per_l_predicted: 954,
-      is_forecast: false,
-    },
-  ],
-])
+const topology = us as unknown as Topology
+
+const counties = feature(
+  topology,
+  topology.objects.counties as GeometryCollection
+).features;
+
+const states = feature(
+  topology,
+  topology.objects.states as GeometryCollection
+).features;
+
+const riskTiers = [
+  { tier: "Minimal", ordinal: 1 },
+  { tier: "Low", ordinal: 2 },
+  { tier: "Moderate", ordinal: 3 },
+  { tier: "High", ordinal: 4 },
+] as const;
+
+export const countyRiskLookup = new Map<string, CountyData>(
+
+    counties.map((county, index) => {
+      const risk = riskTiers[index % riskTiers.length];
+
+      const countyFips = county.id as string;
+      const stateFips = countyFips.slice(0, 2);
+      const state = states.find(s => s.id === stateFips);
+
+      console.log('state', state);
+      return [
+        county.id as string,
+        {
+          county_fips: county.id as string,
+          county_name: (county.properties as {name: string }).name,
+          state_abbr: (state?.properties as {name: string }).name,
+          date: "2024-06-12",
+          biobot_risk_tier: risk.tier,
+          ordinal_risk_tier: risk.ordinal,
+          biobot_trend:
+              index % 3 === 0
+                  ? "Increasing"
+                  : index % 3 === 1
+                      ? "Stable"
+                      : "Decreasing",
+          perc_change:
+              index % 5 === 0
+                  ? null
+                  : Math.round((Math.random() * 120 - 40) * 10) / 10,
+          effective_conc_copies_per_l_predicted:
+              300 + Math.floor(Math.random() * 2200),
+          is_forecast: false,
+        },
+      ];
+    })
+);

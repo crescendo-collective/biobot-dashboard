@@ -3,8 +3,7 @@
   width: 100%;
   min-height: 500px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 
   @media (max-width: 900px) {
     min-height: 360px;
@@ -13,6 +12,18 @@
   @media (max-width: 480px) {
     min-height: 280px;
   }
+}
+
+// The SVG's actual sizing box. Split out from .map-container so adding
+// the legend below doesn't skew the map's measured width/height (see
+// useCountyChoropleth.ts, which measures this element specifically,
+// not the outer container that now also contains the legend).
+.map-canvas {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   svg {
     width: 100%;
@@ -27,4 +38,3 @@
     }
   }
 }
-

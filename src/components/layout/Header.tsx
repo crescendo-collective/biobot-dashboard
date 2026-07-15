@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import ThemeToggle from '../ui/ThemeToggle'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import './Header.scss'
 
 export default function Header() {

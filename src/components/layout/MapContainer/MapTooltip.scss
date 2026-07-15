@@ -1,7 +1,7 @@
 .map-tooltip {
   position: absolute;
-  min-width: 250px;
-  padding: 18px;
+  min-width: 260px;
+  padding: 22px 24px;
   border-radius: 14px;
   background: white;
   // The tooltip card is intentionally always-white regardless of theme
@@ -23,45 +23,79 @@
 }
 
 .map-tooltip h3 {
-  margin: 0 0 18px;
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .tooltip-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin-top: 10px;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.tooltip-label {
+  color: #6b6b62;
+  font-size: 0.9rem;
 }
 
 .pill {
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.pill.minimal {
+// Risk-tier pills — reads the same tier scale as the map's county fill,
+// just the soft/pastel + paired text variant (see index.scss).
+.pill.tier-minimal {
   background: var(--tier-minimal-soft);
+  color: var(--tier-minimal-soft-text);
 }
 
-.pill.low {
+.pill.tier-low {
   background: var(--tier-low-soft);
+  color: var(--tier-low-soft-text);
 }
 
-.pill.moderate {
+.pill.tier-moderate {
   background: var(--tier-moderate-soft);
+  color: var(--tier-moderate-soft-text);
 }
 
-.pill.high {
+.pill.tier-high {
   background: var(--tier-high-soft);
+  color: var(--tier-high-soft-text);
 }
 
-.pill.very-high {
+.pill.tier-very-high {
   background: var(--tier-very-high-soft);
+  color: var(--tier-very-high-soft-text);
 }
 
-// Was missing — BiobotRiskTier didn't include 'Severe' until this
-// cleanup, so there was nowhere for this rule to matter yet. Data from
-// data.pcrCountyHotspots.json confirms 'Severe' is a real tier value.
-.pill.severe {
+.pill.tier-severe {
   background: var(--tier-severe-soft);
-  color: white;
+  color: var(--tier-severe-soft-text);
+}
+
+// Trend + % change pills — a separate increasing/decreasing/stable
+// scale, reused for both rows since % change's sign and the trend
+// label describe the same underlying direction.
+.pill.trend-increasing {
+  background: var(--trend-increasing-bg);
+  color: var(--trend-increasing-text);
+}
+
+.pill.trend-decreasing {
+  background: var(--trend-decreasing-bg);
+  color: var(--trend-decreasing-text);
+}
+
+.pill.trend-stable {
+  background: var(--trend-stable-bg);
+  color: var(--trend-stable-text);
 }

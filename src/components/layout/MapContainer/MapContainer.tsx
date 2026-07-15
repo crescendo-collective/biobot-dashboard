@@ -1,9 +1,9 @@
 import { useRef, useState, useCallback } from 'react'
-import { countyRiskLookup } from '../../../data/mock/countyRiskLookup'
+import { countyRiskLookup } from '@/data/mock/countyRiskLookup'
 import { getCountyColor } from './colors'
 import { useCountyChoropleth } from './useCountyChoropleth'
 import MapTooltip from './MapTooltip'
-import type { CountyData } from '../../../types/map'
+import type { CountyData } from '@/types/map'
 import './MapContainer.scss'
 
 export default function MapContainer() {
@@ -39,13 +39,15 @@ export default function MapContainer() {
 
   return (
     <div ref={containerRef} className="map-container">
-      <svg ref={svgRef} />
-      <MapTooltip
-        county={hoveredCounty}
-        x={mousePosition.x}
-        y={mousePosition.y}
-        visible={!!hoveredCounty}
-      />
+      <div className="map-canvas">
+        <svg ref={svgRef} />
+        <MapTooltip
+          county={hoveredCounty}
+          x={mousePosition.x}
+          y={mousePosition.y}
+          visible={!!hoveredCounty}
+        />
+      </div>
     </div>
   )
 }

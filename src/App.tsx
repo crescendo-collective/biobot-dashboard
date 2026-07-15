@@ -6,6 +6,7 @@ import MapContainer from './components/layout/MapContainer'
 import InsightPanel from './components/layout/InsightPanel'
 import type { Insight } from './components/layout/InsightPanel'
 import './App.scss'
+import MapLegend from "@/components/layout/MapContainer/MapLegend.tsx";
 
 const pathogens: TrackerGroup = {
   items: [
@@ -69,7 +70,10 @@ export default function App() {
           activeDrugId={activeDrugId}
           onSelectDrug={setActiveDrugId}
         />
-        <MapContainer />
+        <div>
+          <MapContainer />
+          <MapLegend />
+        </div>
         <InsightPanel risk={risk} forecast={forecast} />
       </div>
     </div>
