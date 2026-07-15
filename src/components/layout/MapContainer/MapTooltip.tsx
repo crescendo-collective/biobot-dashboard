@@ -45,11 +45,10 @@ export default function MapTooltip({ county, x, y, visible }: Props) {
         <div className="tooltip-row">
           <span className="tooltip-label">% Change:</span>
           <span className={`pill trend-${changeClass(county.perc_change)}`}>
-            {`${county.perc_change.toFixed(1)}%`}
+            {`${county.perc_change > 0 ? '+' : ''}${county.perc_change.toFixed(1)}%`}
           </span>
         </div>
       )}
-
     </div>
   )
 }

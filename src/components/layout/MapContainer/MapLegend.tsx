@@ -11,13 +11,6 @@ export default function MapLegend() {
           <li key={tier} className="map-legend-item">
             <span className="map-legend-swatch" style={{ background: getTierColor(tier) }} />
             <span className="map-legend-label">{tier}</span>
-            <span
-              className="map-legend-info"
-              title={`About the "${tier}" risk tier`}
-              aria-label={`More info about the ${tier} risk tier`}
-            >
-              ?
-            </span>
           </li>
         ))}
       </ul>

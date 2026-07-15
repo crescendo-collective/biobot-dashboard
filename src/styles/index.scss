@@ -61,11 +61,32 @@
   --tier-no-data: #c2c2c2;
 
   --tier-minimal-soft: #dff7b3;
-  --tier-low-soft: #eef8b7;
+  --tier-low-soft: #f0e4be;
   --tier-moderate-soft: #ffe58d;
   --tier-high-soft: #ffbe72;
   --tier-very-high-soft: #ff9d9d;
   --tier-severe-soft: #cf9bb0;
+
+  /* Tooltip pill backgrounds are always-light regardless of theme (the
+     tooltip card itself is hardcoded white — see MapTooltip.scss), so
+     these need their own paired text colors rather than relying on
+     var(--text), which flips to near-white in dark theme. */
+  --tier-minimal-soft-text: #3f7d0a;
+  --tier-low-soft-text: #7a6a2e;
+  --tier-moderate-soft-text: #8a5a06;
+  --tier-high-soft-text: #8a3a12;
+  --tier-very-high-soft-text: #7a1f42;
+  --tier-severe-soft-text: #ffffff;
+
+  /* Trend + % change pills use their own scale (increasing/decreasing/
+     stable) rather than the risk-tier scale — trend direction and risk
+     tier are different dimensions of the same county. */
+  --trend-increasing-bg: #ffdada;
+  --trend-increasing-text: #c61d00;
+  --trend-decreasing-bg: #cdf3d1;
+  --trend-decreasing-text: #1e7a34;
+  --trend-stable-bg: #ffffcc;
+  --trend-stable-text: #595949;
 }
 
 * { box-sizing: border-box; }

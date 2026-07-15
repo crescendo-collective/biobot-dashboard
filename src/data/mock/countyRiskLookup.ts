@@ -31,7 +31,6 @@ export const countyRiskLookup = new Map<string, CountyData>(
       const stateFips = countyFips.slice(0, 2);
       const state = states.find(s => s.id === stateFips);
 
-      console.log('state', state);
       return [
         county.id as string,
         {
