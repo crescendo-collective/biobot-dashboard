@@ -1,106 +1,102 @@
-# Dashboard
+# BioBot Dashboard
 
-A plain React + Vite + TypeScript dashboard (no Next.js), built to be embedded
-in an `<iframe>` on another site.
+Sanofi BioBot wastewater surveillance dashboard — React frontend, AWS Lambda API, and PostgreSQL data layer.
 
-## Run it locally
+## Current scope
+
+This repository contains:
+
+1. **PostgreSQL database schema** — disease-agnostic tables for BioBot ingestion and dashboard queries ([database/README.md](database/README.md))
+2. **React frontend** — Vite + TypeScript dashboard embeddable in an `<iframe>` ([frontend/README.md](frontend/README.md))
+3. **AWS Lambda API** — data import and read endpoints backed by PostgreSQL
+
+| Endpoint                              | Geography | Dataset variant |
+| ------------------------------------- | --------- | --------------- |
+| `/beta/data/{target}/national`        | National  | `standard`      |
+| `/beta/data/{target}/regional`        | Regional  | `standard`      |
+| `/beta/data/{target}/state`           | State     | `standard`      |
+| `/beta/data/{target}/county/ai`       | County    | `ai`            |
+| `/beta/data/{target}/county/hotspots` | County    | `hotspots`      |
+| `/beta/data/{target}/zip`             | ZIP       | `standard`      |
+
+API integration (Lambda fetch, S3 staging) is implemented in `lambdas/import-data`.
+
+The schema supports all geography levels exposed by the [BioBot Analytics API](https://api.explore.biobot.io).
+
+## Folder structure
+
+```
+biobot-dashboard/
+├── database/
+│   ├── migrations/
+│   │   ├── 001_initial_schema.sql
+│   │   └── 002_seed_initial_data.sql
+│   └── README.md
+├── frontend/              # React + Vite dashboard
+├── lambdas/
+│   ├── import-data/
+│   ├── get-map/
+│   ├── get-trends/
+│   ├── get-history/
+│   └── shared/
+├── template.yaml          # AWS SAM
+├── samconfig.toml
+└── package.json           # npm workspaces root
+```
+
+## Quick start
+
+### Database
+
+See [database/README.md](database/README.md) for schema documentation, ER diagram, field mappings, and migration instructions.
+
+```bash
+psql $DATABASE_URL -f database/migrations/001_initial_schema.sql
+psql $DATABASE_URL -f database/migrations/002_seed_initial_data.sql
+```
+
+### Application
 
 ```bash
 npm install
-npm run dev
+cp frontend/.env.example frontend/.env
+npm run dev          # frontend at http://localhost:5173
+npm run build        # outputs to frontend/dist/
+npm run typecheck    # TypeScript only, no build
+npm run sam:build    # build Lambdas
 ```
 
-Opens at `http://localhost:5173`.
+The frontend is a plain React + Vite + TypeScript app (no Next.js), designed to
+be embedded in an `<iframe>` on another site. See [frontend/README.md](frontend/README.md)
+for production build details, iframe `Content-Security-Policy` headers, the
+dark/light theme system, and source layout.
 
-## Build for production
+### Environment variables
+
+| Variable | Used by | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | Lambdas | PostgreSQL connection string |
+| `BIOBOT_API_KEY` | import-data | BioBot API bearer token |
+| `BIOBOT_API_BASE_URL` | import-data | Default: `https://api.explore.biobot.io` |
+| `VITE_API_BASE_URL` | frontend | API Gateway base URL |
+
+## API endpoints (SAM)
+
+| Method | Path | Lambda | Description |
+|--------|------|--------|-------------|
+| `POST` | `/import` | import-data | Trigger manual data import |
+| `GET` | `/map?target=RSV&level=state` | get-map | Map choropleth features |
+| `GET` | `/trends?target=RSV&level=national` | get-trends | Latest trend summary |
+| `GET` | `/history?target=RSV&level=national&weeks=52` | get-history | Time-series history |
+
+## Key design decision
+
+A single `surveillance_observations` fact table with nullable geography-specific metric columns avoids per-disease or per-level table proliferation. When Sanofi adds influenza or COVID, only `targets` and `dataset_config` rows change — the schema stays the same.
+
+## Deploy to AWS
 
 ```bash
-npm run build
+npm run sam:deploy
 ```
 
-Runs a type check (`tsc -b`) before the Vite build. Run `npm run typecheck`
-on its own any time to just check types without building.
-
-Outputs static files to `dist/`. Deploy that folder to any static host
-(Vercel, Netlify, S3 + CloudFront, GitHub Pages, your own nginx box, etc.).
-`vite.config.js` uses `base: './'`, so the build works whether it's served
-from the domain root or a sub-path.
-
-## Making it embeddable
-
-Embedding is controlled by HTTP response headers from wherever you **host**
-the built app — nothing in the React code itself blocks framing, but most
-static hosts send a restrictive default you'll need to override:
-
-- **Don't send `X-Frame-Options: DENY` or `SAMEORIGIN`** (or send
-  `X-Frame-Options: ALLOWALL` / omit it entirely).
-- **Set a `Content-Security-Policy` `frame-ancestors` directive** naming the
-  site(s) allowed to embed it, e.g.:
-  ```
-  Content-Security-Policy: frame-ancestors https://your-external-site.com
-  ```
-  `frame-ancestors` takes precedence over `X-Frame-Options` in modern
-  browsers, so this is the one that actually matters in production —
-  set it as narrowly as you can (avoid `*` if this dashboard shows any
-  non-public data).
-
-Where to set this depends on your host:
-- **Vercel/Netlify**: a `_headers` file or `vercel.json` `headers` config.
-- **nginx**: `add_header` in the server block.
-- **S3/CloudFront**: a CloudFront response headers policy.
-
-On the **embedding site**, the iframe tag looks like:
-
-```html
-<iframe
-  src="https://your-dashboard-domain.com"
-  width="100%"
-  height="700"
-  style="border: 0;"
-  loading="lazy"
-></iframe>
-```
-
-## Swapping in real data
-
-Everything currently reads from `src/data/mockData.js`. Replace its exports
-with a `fetch()` call (or `useEffect` + `useState`, or a small SWR/React
-Query setup if the dashboard will poll) — every component already consumes
-that same shape, so nothing else needs to change.
-
-## Theme (dark / light)
-
-There's a toggle in the header (sun/moon switch, next to the hamburger menu).
-
-- `src/context/ThemeContext.tsx` holds the state, writes `data-theme="dark"|"light"`
-  onto `<html>`, and persists the choice to `localStorage`.
-- `src/index.css` defines two variable sets, `[data-theme='dark']` and
-  `[data-theme='light']`, both under the same variable names (`--bg`,
-  `--surface`, `--text`, `--accent-cyan`, etc.) — every component reads
-  those variables, so nothing else needs to change when the theme flips.
-- An inline script in `index.html` sets `data-theme` before React mounts,
-  so there's no flash of the wrong theme on reload.
-- First-time visitors get the OS-level `prefers-color-scheme` as the
-  default; after that, their explicit choice wins.
-
-To restyle a theme, edit the values inside its `[data-theme='...']` block
-in `src/index.css` — the light palette is a separate hand-tuned set, not
-an inversion of the dark one, so contrast stays right in both.
-
-## Structure
-
-```
-src/
-  components/
-    layout/
-      Header.jsx       — logo, timeline scrubber, theme toggle, menu
-      Sidebar.jsx       — Pathogens / Drugs tracker lists
-      MapContainer.jsx  — placeholder for the county choropleth
-      InsightPanel.jsx  — risk / forecast stat cards
-    ui/
-      ThemeToggle.jsx   — the sun/moon switch
-  context/
-    ThemeContext.jsx    — dark/light state, persisted + OS-aware
-  App.jsx                — composes the layout, sample data
-  index.css               — design tokens (colors, type) per theme
-```
+SAM prompts for `DatabaseUrl` and `BioBotApiKey`. The stack creates API Gateway with CORS, 4 Lambda functions, and an EventBridge schedule (weekly import, Monday 06:00 UTC).

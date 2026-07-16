@@ -1,24 +1,28 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Dependencies
+node_modules/
 
-node_modules
-dist
-dist-ssr
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+.aws-sam/
+
+# Environment
+.env
 *.local
 
-# Editor directories and files
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+
+# Stray lockfiles (use root package-lock.json only)
+pnpm-lock.yaml
