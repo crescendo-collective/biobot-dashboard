@@ -15,19 +15,6 @@ export const pathogens: TrackerGroup = {
   ],
 }
 
-export const drugs: TrackerGroup = {
-  items: [
-    { id: 'fentanyl', label: 'Fentanyl' },
-    { id: 'cocaine', label: 'Cocaine' },
-    { id: 'meth', label: 'Methamphetamine' },
-    { id: 'heroin', label: 'Heroin' },
-    { id: 'xylazine', label: 'Xylazine' },
-    { id: 'mdma', label: 'MDMA' },
-    { id: 'oxycodone', label: 'Oxycodone' },
-    { id: 'benzodiazepines', label: 'Benzodiazepines' },
-  ],
-}
-
 /** URL slug used for the "/" → "/:disease" default redirect, and for
  * any unrecognized :disease value (see Dashboard.tsx). Hardcoded to
  * 'rsv' rather than derived from list order — this is a deliberate

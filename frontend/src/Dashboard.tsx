@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
@@ -6,7 +6,7 @@ import MapContainer from '@/components/layout/MapContainer'
 import MapLegend from '@/components/layout/MapContainer/MapLegend'
 import InsightPanel from '@/components/layout/InsightPanel'
 import type { Insight } from '@/components/layout/InsightPanel'
-import { pathogens, drugs, DEFAULT_DISEASE_ID } from '@/data/trackers'
+import { pathogens, DEFAULT_DISEASE_ID } from '@/data/trackers'
 import './App.scss'
 
 const risk: Insight = {
@@ -35,8 +35,6 @@ export default function Dashboard() {
   const { disease } = useParams<{ disease: string }>()
   const navigate = useNavigate()
 
-  const [activeDrugId, setActiveDrugId] = useState<string | null>(null)
-
   const validPathogenIds = useMemo(() => new Set(pathogens.items.map((item) => item.id)), [])
 
   // Someone can type/link to any string in the :disease slot — if it
@@ -57,11 +55,8 @@ export default function Dashboard() {
       <div className="app-body">
         <Sidebar
           pathogens={pathogens}
-          drugs={drugs}
           activePathogenId={disease}
           onSelectPathogen={handleSelectPathogen}
-          activeDrugId={activeDrugId}
-          onSelectDrug={setActiveDrugId}
         />
         <div>
           <MapContainer />

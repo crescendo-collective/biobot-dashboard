@@ -124,7 +124,7 @@ src/
   components/
     layout/
       Header.tsx        — logo, timeline scrubber, theme toggle, menu
-      Sidebar.tsx       — Pathogens / Drugs tracker lists
+      Sidebar.tsx       — Pathogens tracker lists
       MapContainer/     — county choropleth map
       InsightPanel.tsx  — risk / forecast stat cards
     ui/

@@ -56,20 +56,14 @@ function TrackerList({ title, items, activeId, onSelect }: TrackerListProps) {
 
 export interface SidebarProps {
   pathogens: TrackerGroup
-  drugs: TrackerGroup
   activePathogenId: string | null
   onSelectPathogen: (id: string) => void
-  activeDrugId: string | null
-  onSelectDrug: (id: string) => void
 }
 
 export default function Sidebar({
   pathogens,
-  drugs,
   activePathogenId,
   onSelectPathogen,
-  activeDrugId,
-  onSelectDrug,
 }: SidebarProps) {
   return (
     <aside className="sidebar">
@@ -78,12 +72,6 @@ export default function Sidebar({
         items={pathogens.items}
         activeId={activePathogenId}
         onSelect={onSelectPathogen}
-      />
-      <TrackerList
-        title="DRUGS"
-        items={drugs.items}
-        activeId={activeDrugId}
-        onSelect={onSelectDrug}
       />
     </aside>
   )
