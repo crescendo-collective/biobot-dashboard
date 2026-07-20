@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: BioBot Dashboard — API Lambdas and scheduled data import
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL connection string (e.g. postgresql://user:pass@host:5432/biobot)
+  BioBotApiKey:
+    Type: String
+    NoEcho: true
+    Description: BioBot Analytics API key
+  BioBotApiBaseUrl:
+    Type: String
+    Default: https://api.explore.biobot.io
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DATABASE_URL: !Ref DatabaseUrl
+        BIOBOT_API_KEY: !Ref BioBotApiKey
+        BIOBOT_API_BASE_URL: !Ref BioBotApiBaseUrl
+
+Resources:
+  BioBotApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub biobot-dashboard-api-${Environment}
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+  ImportDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub biobot-import-data-${Environment}
+      Handler: import-data/index.handler
+      CodeUri: lambdas/
+      Description: Fetches BioBot API data and upserts into PostgreSQL
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        WeeklySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 6 ? * MON *)
+            Description: Weekly BioBot data import — Monday 06:00 UTC
+            Enabled: true
+        ManualTrigger:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BioBotApi
+            Path: /import
+            Method: POST
+
+  GetMapFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub biobot-get-map-${Environment}
+      Handler: get-map/index.handler
+      CodeUri: lambdas/
+      Description: Returns latest surveillance data for map choropleth
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        GetMap:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BioBotApi
+            Path: /map
+            Method: GET
+
+  GetTrendsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub biobot-get-trends-${Environment}
+      Handler: get-trends/index.handler
+      CodeUri: lambdas/
+      Description: Returns current trend and risk tier summary
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        GetTrends:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BioBotApi
+            Path: /trends
+            Method: GET
+
+  GetHistoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub biobot-get-history-${Environment}
+      Handler: get-history/index.handler
+      CodeUri: lambdas/
+      Description: Returns time-series history for charts
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        GetHistory:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BioBotApi
+            Path: /history
+            Method: GET
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${BioBotApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+  ImportDataFunctionArn:
+    Description: Import data Lambda ARN
+    Value: !GetAtt ImportDataFunction.Arn
