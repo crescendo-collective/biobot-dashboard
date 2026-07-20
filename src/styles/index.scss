@@ -60,8 +60,8 @@
   --tier-severe: #1a0014;
   --tier-no-data: #c2c2c2;
 
-  --tier-minimal-soft: #dff7b3;
-  --tier-low-soft: #f0e4be;
+  --tier-minimal-soft: #cdf3d1;
+  --tier-low-soft: #ffffcc;
   --tier-moderate-soft: #ffe58d;
   --tier-high-soft: #ffbe72;
   --tier-very-high-soft: #ff9d9d;
@@ -71,8 +71,8 @@
      tooltip card itself is hardcoded white — see MapTooltip.scss), so
      these need their own paired text colors rather than relying on
      var(--text), which flips to near-white in dark theme. */
-  --tier-minimal-soft-text: #3f7d0a;
-  --tier-low-soft-text: #7a6a2e;
+  --tier-minimal-soft-text: #1e7a34;
+  --tier-low-soft-text: #595949;
   --tier-moderate-soft-text: #8a5a06;
   --tier-high-soft-text: #8a3a12;
   --tier-very-high-soft-text: #7a1f42;

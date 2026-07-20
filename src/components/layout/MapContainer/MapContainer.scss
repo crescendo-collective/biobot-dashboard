@@ -19,6 +19,7 @@
 // useCountyChoropleth.ts, which measures this element specifically,
 // not the outer container that now also contains the legend).
 .map-canvas {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;

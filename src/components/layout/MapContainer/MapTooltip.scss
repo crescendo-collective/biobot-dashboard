@@ -3,12 +3,15 @@
   min-width: 240px;
   padding: 20px 26px 20px 16px;
   border-radius: 4px;
-  background: white;
-  // The tooltip card is intentionally always-white regardless of theme
-  // (matches the reference design), but that means it can't rely on
-  // var(--text) for its own text color — in dark theme that resolves
-  // to near-white, which is unreadable on a white card. Pinned here.
-  color: #1a1a1a;
+  // Now theme-aware — was hardcoded white/#1a1a1a, which looked fine in
+  // light theme but stayed a stark white card even with dark theme
+  // active. var(--surface-raised)/var(--text) already track the active
+  // theme everywhere else in the app; a border adds definition against
+  // the dark vignette background specifically, since box-shadow alone
+  // reads much less clearly on dark than it does on white.
+  background: var(--surface-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
   box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.08);
   pointer-events: none;
   opacity: 0;
@@ -37,7 +40,7 @@
 }
 
 .tooltip-label {
-  color: #6b6b62;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -47,6 +50,12 @@
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  // Outline in the pill's own text color. currentColor always resolves
+  // to whatever `color` this element has — since every variant below
+  // sets both background and color together, this one line picks up
+  // the right outline color automatically for all of them; no need to
+  // repeat each tier/trend color a third time just for the border.
+  border: 1.5px solid currentColor;
 }
 
 // Risk-tier pills — reads the same tier scale as the map's county fill,
