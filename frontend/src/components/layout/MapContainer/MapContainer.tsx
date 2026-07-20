@@ -3,12 +3,14 @@ import { countyRiskLookup } from '@/data/mock/countyRiskLookup'
 import { getCountyColor } from './colors'
 import { useCountyChoropleth } from './useCountyChoropleth'
 import MapTooltip from './MapTooltip'
+import MapZoomControls from './MapZoomControls'
 import type { CountyData } from '@/types/map'
 import './MapContainer.scss'
 
 export default function MapContainer() {
   const [hoveredCounty, setHoveredCounty] = useState<CountyData>()
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [zoomPercent, setZoomPercent] = useState(100)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
@@ -30,11 +32,16 @@ export default function MapContainer() {
     setHoveredCounty(undefined)
   }, [])
 
-  useCountyChoropleth(containerRef, svgRef, {
+  const handleZoomChange = useCallback((scale: number) => {
+    setZoomPercent(Math.round(scale * 100))
+  }, [])
+
+  const { zoomIn, zoomOut, zoomToFit } = useCountyChoropleth(containerRef, svgRef, {
     getFill,
     onHover: handleHover,
     onMove: handleMove,
     onLeave: handleLeave,
+    onZoomChange: handleZoomChange,
   })
 
   return (
@@ -46,6 +53,12 @@ export default function MapContainer() {
           x={mousePosition.x}
           y={mousePosition.y}
           visible={!!hoveredCounty}
+        />
+        <MapZoomControls
+          zoomPercent={zoomPercent}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onRecenter={zoomToFit}
         />
       </div>
     </div>
