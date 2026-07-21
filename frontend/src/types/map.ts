@@ -20,8 +20,3 @@ export interface CountyData {
   effective_conc_copies_per_l_predicted: number
   is_forecast: boolean
 }
-
-export interface CountyResponse {
-  data: CountyData[]
-  next_page_token?: string
-}

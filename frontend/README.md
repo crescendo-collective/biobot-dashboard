@@ -29,6 +29,30 @@ Outputs static files to `frontend/dist/`. Deploy that folder to any static host
 `vite.config.ts` uses `base: './'`, so the build works whether it's served
 from the domain root or a sub-path.
 
+## Routing
+
+The app uses `react-router-dom`'s `BrowserRouter`, with the selected
+pathogen driving the URL: `/rsv`, `/sars-cov-2`, etc. — visiting `/`
+redirects to whatever's first in `src/data/trackers.ts`'s `pathogens`
+list. Reading `useParams().disease` anywhere under the route is the
+current pathogen; that's also the hook point for wiring up a real API
+call per-pathogen later.
+
+**This needs one thing from your host:** `BrowserRouter` uses real
+paths, so a direct link or hard refresh on `/rsv` has to still serve
+`index.html` (React Router then reads the URL client-side) — most
+static hosts 404 on that by default unless told otherwise:
+- **Vercel**: add a rewrite in `vercel.json` — `{ "source": "/(.*)", "destination": "/index.html" }`
+- **Netlify**: a `_redirects` file with `/*  /index.html  200`
+- **nginx**: `try_files $uri /index.html;` in the server block
+- **S3 + CloudFront**: set the CloudFront error page (403/404) to return `/index.html` with a 200
+
+If you'd rather not deal with server rewrites at all (e.g. deploying to
+a host you don't control the config for), swapping `BrowserRouter` for
+`HashRouter` in `main.tsx` gets you `/#/rsv`-style URLs that work on any
+static host with zero config — trade-off is the URL is slightly less
+clean. Worth deciding based on your actual host before shipping this.
+
 ## Making it embeddable
 
 Embedding is controlled by HTTP response headers from wherever you **host**
@@ -100,7 +124,7 @@ src/
   components/
     layout/
       Header.tsx        — logo, timeline scrubber, theme toggle, menu
-      Sidebar.tsx       — Pathogens / Drugs tracker lists
+      Sidebar.tsx       — Pathogens tracker lists
       MapContainer/     — county choropleth map
       InsightPanel.tsx  — risk / forecast stat cards
     ui/

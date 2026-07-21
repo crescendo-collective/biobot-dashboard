@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import * as d3 from 'd3'
 import { countyFeatures, stateBordersMesh, geographyExtentSource } from './geography'
@@ -8,7 +8,20 @@ export interface UseCountyChoroplethOptions {
   onHover: (fips: string, x: number, y: number) => void
   onMove: (x: number, y: number) => void
   onLeave: () => void
+  /** Called with the current zoom scale (1 = 100%) whenever it changes,
+   * from scroll/drag zoom OR the imperative controls below. */
+  onZoomChange?: (scale: number) => void
 }
+
+export interface CountyChoroplethControls {
+  zoomIn: () => void
+  zoomOut: () => void
+  /** Resets pan + zoom back to the initial fitted view. */
+  zoomToFit: () => void
+}
+
+const ZOOM_STEP = 1.4
+const ZOOM_EXTENT: [number, number] = [1, 8]
 
 /**
  * Owns all D3 rendering for the county choropleth: projection, county
@@ -22,14 +35,21 @@ export interface UseCountyChoroplethOptions {
  * passing new inline callbacks from MapContainer on every render (e.g.
  * because hover state changed) does NOT tear down and rebuild the whole
  * map on every mouse move. Only container/svg ref identity re-runs setup.
+ *
+ * Returns imperative zoom controls (zoomIn/zoomOut/zoomToFit) for a
+ * button UI — the D3 zoom behavior itself lives entirely inside the
+ * setup effect's closure, so these reach it via a ref rather than
+ * recreating/duplicating any zoom logic.
  */
 export function useCountyChoropleth(
   containerRef: RefObject<HTMLDivElement>,
   svgRef: RefObject<SVGSVGElement>,
   options: UseCountyChoroplethOptions,
-) {
+): CountyChoroplethControls {
   const optionsRef = useRef(options)
   optionsRef.current = options
+
+  const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
 
   useEffect(() => {
     const container = containerRef.current
@@ -39,8 +59,17 @@ export function useCountyChoropleth(
     function render() {
       if (!container || !svgEl) return
 
-      const width = container.clientWidth
-      const height = container.clientHeight
+      // Measure .map-canvas (the SVG's own sizing box), not the outer
+      // .map-container — the outer container's height isn't guaranteed
+      // to be just the map (e.g. it briefly also held the legend during
+      // earlier work on this component). Sizing off whichever element
+      // is guaranteed to be map-only avoids that class of bug entirely,
+      // regardless of what else ends up inside .map-container later.
+      const canvasEl = svgEl.parentElement
+      if (!canvasEl) return
+
+      const width = canvasEl.clientWidth
+      const height = canvasEl.clientHeight
       if (width === 0 || height === 0) return
 
       const svg = d3.select(svgEl)
@@ -51,11 +80,13 @@ export function useCountyChoropleth(
 
       const zoomBehavior = d3
         .zoom<SVGSVGElement, unknown>()
-        .scaleExtent([1, 8])
+        .scaleExtent(ZOOM_EXTENT)
         .on('zoom', (event) => {
           mapRoot.attr('transform', event.transform)
+          optionsRef.current.onZoomChange?.(event.transform.k)
         })
       svg.call(zoomBehavior)
+      zoomBehaviorRef.current = zoomBehavior
 
       const projection = d3.geoAlbersUsa()
       // BUG FIX: the original chained .fitSize(...).fitExtent(...) on the
@@ -114,6 +145,11 @@ export function useCountyChoropleth(
         .attr('stroke-width', 0.8)
         .attr('pointer-events', 'none')
         .attr('d', path)
+
+      // Zoom always starts at 100% on a fresh render (fitExtent above
+      // resets the projection itself), so make sure any external
+      // percentage readout reflects that rather than a stale value.
+      optionsRef.current.onZoomChange?.(1)
     }
 
     render()
@@ -123,23 +159,49 @@ export function useCountyChoropleth(
     // breakpoints in MapContainer.scss (min-height steps, sidebar width
     // changes affecting the map's 1fr track) had no visible effect on
     // the actual SVG content, only its container box. A ResizeObserver
-    // re-renders the map whenever its container's size actually changes.
+    // re-renders the map whenever its actual sizing box (.map-canvas)
+    // changes size.
     let frame: number | null = null
     const resizeObserver = new ResizeObserver(() => {
       if (frame !== null) cancelAnimationFrame(frame)
       frame = requestAnimationFrame(render)
     })
-    resizeObserver.observe(container)
+    const canvasEl = svgEl.parentElement
+    if (canvasEl) resizeObserver.observe(canvasEl)
 
     return () => {
       resizeObserver.disconnect()
       if (frame !== null) cancelAnimationFrame(frame)
       d3.select(svgEl).selectAll('*').remove()
+      zoomBehaviorRef.current = null
     }
     // containerRef/svgRef are stable ref objects (identity never changes
     // across renders), so this effect only truly runs once per mount —
-    // getFill/onHover/onMove/onLeave are intentionally NOT deps here;
-    // see optionsRef above for why.
+    // getFill/onHover/onMove/onLeave/onZoomChange are intentionally NOT
+    // deps here; see optionsRef above for why.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef, svgRef])
+
+  const zoomIn = useCallback(() => {
+    const svgEl = svgRef.current
+    const zoomBehavior = zoomBehaviorRef.current
+    if (!svgEl || !zoomBehavior) return
+    d3.select(svgEl).transition().duration(200).call(zoomBehavior.scaleBy, ZOOM_STEP)
+  }, [svgRef])
+
+  const zoomOut = useCallback(() => {
+    const svgEl = svgRef.current
+    const zoomBehavior = zoomBehaviorRef.current
+    if (!svgEl || !zoomBehavior) return
+    d3.select(svgEl).transition().duration(200).call(zoomBehavior.scaleBy, 1 / ZOOM_STEP)
+  }, [svgRef])
+
+  const zoomToFit = useCallback(() => {
+    const svgEl = svgRef.current
+    const zoomBehavior = zoomBehaviorRef.current
+    if (!svgEl || !zoomBehavior) return
+    d3.select(svgEl).transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity)
+  }, [svgRef])
+
+  return { zoomIn, zoomOut, zoomToFit }
 }
