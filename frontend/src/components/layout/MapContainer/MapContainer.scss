@@ -16,8 +16,8 @@
 
 // The SVG's actual sizing box. Split out from .map-container so adding
 // the legend below doesn't skew the map's measured width/height (see
-// useCountyChoropleth.ts, which measures this element specifically,
-// not the outer container that now also contains the legend).
+// useChoropleth.ts, which measures this element specifically, not the
+// outer container that now also contains the legend).
 .map-canvas {
   position: relative;
   flex: 1;

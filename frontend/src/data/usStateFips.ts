@@ -70,3 +70,10 @@ const STATE_FIPS_TO_ABBR: Record<string, string> = {
 export function stateAbbrFromCountyFips(countyFips: string): string {
   return STATE_FIPS_TO_ABBR[countyFips.slice(0, 2)] ?? '??'
 }
+
+/** Same lookup, for when you already have a bare 2-digit state FIPS
+ * (e.g. from a us-atlas state feature's own `.id`) rather than a
+ * county FIPS to slice it out of. */
+export function stateAbbrFromStateFips(stateFips: string): string {
+  return STATE_FIPS_TO_ABBR[stateFips] ?? '??'
+}

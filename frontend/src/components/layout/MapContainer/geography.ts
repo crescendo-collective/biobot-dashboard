@@ -11,6 +11,22 @@ export const countyFeatures = feature(
   topology.objects.counties as GeometryCollection,
 )
 
+/** Inferred from topojson-client's own return type rather than importing
+ * a geo type package directly (e.g. d3-geo) — that's a transitive
+ * dependency here, not a direct one, which pnpm's strict linking won't
+ * reliably resolve for a type-only import. Reusing what TS already
+ * inferred above sidesteps that entirely. */
+export type GeoFeatureCollection = typeof countyFeatures
+
+/** All US states as individual GeoJSON features, keyed by the 2-digit
+ * state FIPS via `.id` — used for the state-level view (fillable and
+ * hoverable per-state, unlike stateBordersMesh below which is just a
+ * single combined line overlay). */
+export const stateFeatures = feature(
+  topology,
+  topology.objects.states as GeometryCollection,
+)
+
 /** State boundaries as a single mesh (internal borders only), used to
  * draw a lighter overlay on top of the county fills. */
 export const stateBordersMesh = mesh(
@@ -18,8 +34,3 @@ export const stateBordersMesh = mesh(
   topology.objects.states as GeometryCollection,
   (a, b) => a !== b,
 )
-
-/** Used for the projection's fitExtent — the counties feature collection
- * covers the same area as the states one, so either works; counties is
- * what's visually filling the map, so that's what the projection fits to. */
-export const geographyExtentSource = countyFeatures

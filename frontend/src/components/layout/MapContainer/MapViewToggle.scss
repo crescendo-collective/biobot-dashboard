@@ -1,0 +1,33 @@
+.map-view-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  // Matching MapZoomControls' current styling exactly, so the two
+  // floating controls on the map read as one consistent system rather
+  // than two separately-designed pieces of chrome.
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.map-view-toggle-option {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &.active {
+    background: var(--accent-amber);
+    color: #1a1a1a;
+  }
+
+  &:not(.active):hover {
+    color: var(--text);
+  }
+}
