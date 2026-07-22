@@ -21,6 +21,38 @@ This repository contains:
 
 API integration (Lambda fetch, S3 staging) is implemented in `lambdas/import-data`.
 
+### BioBot API client
+
+Reusable client in `lambdas/shared/biobot-api.js`. Lambdas import it and call dataset helpers without handling auth or HTTP details.
+
+```javascript
+const {
+  createBioBotClient,
+  fetchNationalData,
+  fetchStateData,
+  fetchCountyData,
+} = require('./shared/biobot-api');
+
+// Option 1: convenience functions (read config from env)
+const nationalRows = await fetchNationalData('RSV');
+const stateRows = await fetchStateData('RSV');
+const countyRows = await fetchCountyData('RSV', { variant: 'ai' });
+
+// Option 2: explicit client instance (useful in tests)
+const client = createBioBotClient({ apiKey: process.env.BIOBOT_API_KEY });
+const page = await client.fetchPage('RSV', 'national');
+```
+
+Authentication matches the [BioBot Analytics Postman collection](https://api.explore.biobot.io): Bearer token only, no custom headers. Target codes are lowercased in URLs (`RSV` → `rsv`).
+
+| Header | Source |
+|--------|--------|
+| `Authorization` | `Bearer ${BIOBOT_API_KEY}` |
+| `Accept` | `application/json` |
+| `User-Agent` | `sanofi-biobot-dashboard/0.1.0` (override via `BIOBOT_USER_AGENT`) |
+
+Endpoints follow `/beta/data/{target}/{path}` with automatic pagination via `next_page_token`.
+
 The schema supports all geography levels exposed by the [BioBot Analytics API](https://api.explore.biobot.io).
 
 ## Folder structure
@@ -76,7 +108,7 @@ dark/light theme system, and source layout.
 | Variable | Used by | Description |
 |----------|---------|-------------|
 | `DATABASE_URL` | Lambdas | PostgreSQL connection string |
-| `BIOBOT_API_KEY` | import-data | BioBot API bearer token |
+| `BIOBOT_API_KEY` | import-data | BioBot API bearer token (`Authorization: Bearer`) |
 | `BIOBOT_API_BASE_URL` | import-data | Default: `https://api.explore.biobot.io` |
 | `VITE_API_BASE_URL` | frontend | API Gateway base URL |
 
