@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { countyRiskLookup } from '@/data/mock/countyRiskLookup'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { getCountySnapshotLookup } from '@/data/mock/countyInterpolated'
 import { stateRiskLookup } from '@/data/mock/stateRiskLookup'
 import { getCountyColor, getStateColor } from './colors'
 import { useChoropleth } from './useChoropleth'
@@ -9,31 +9,66 @@ import type { MapTooltipData } from './MapTooltip'
 import MapZoomControls from './MapZoomControls'
 import MapViewToggle from './MapViewToggle'
 import type { MapViewMode } from './MapViewToggle'
+import type { TimelineDateRange } from '@/types/timeline'
+import type { CountySnapshot, StateData } from '@/types/map'
 import './MapContainer.scss'
 
-export default function MapContainer() {
+interface MapContainerProps {
+  selectedDateRange: TimelineDateRange
+}
+
+function countyTooltipData(county: CountySnapshot): MapTooltipData {
+  return {
+    title: county.state_abbr ? `${county.county_name}, ${county.state_abbr}` : county.county_name,
+    riskTier: county.biobot_risk_tier,
+    trend: county.biobot_trend,
+    percChange: county.perc_change,
+  }
+}
+
+function stateTooltipData(state: StateData): MapTooltipData {
+  return {
+    title: state.state_name,
+    riskTier: state.biobot_risk_tier,
+    trend: state.biobot_trend,
+    percChange: state.perc_change,
+  }
+}
+
+export default function MapContainer({ selectedDateRange }: MapContainerProps) {
   const [viewMode, setViewMode] = useState<MapViewMode>('county')
   const [hoveredData, setHoveredData] = useState<MapTooltipData>()
+  const [hoveredRegionId, setHoveredRegionId] = useState<string>()
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [zoomPercent, setZoomPercent] = useState(100)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  const countyRiskLookup = useMemo(() => getCountySnapshotLookup(selectedDateRange), [selectedDateRange])
+  const dataVersion = `${viewMode}:${selectedDateRange.start.getTime()}:${selectedDateRange.end.getTime()}`
 
-  // Hovered-record state from one view mode is meaningless in the
-  // other (a county tooltip showing while state polygons are on
-  // screen, etc.) — clear it whenever the mode changes rather than
-  // letting a stale tooltip linger.
   useEffect(() => {
-    setHoveredData(undefined)
-  }, [viewMode])
+    if (!hoveredRegionId) {
+      setHoveredData(undefined)
+      return
+    }
+
+    if (viewMode === 'county') {
+      const county = countyRiskLookup.get(hoveredRegionId)
+      setHoveredData(county ? countyTooltipData(county) : undefined)
+      return
+    }
+
+    const state = stateRiskLookup.get(hoveredRegionId)
+    setHoveredData(state ? stateTooltipData(state) : undefined)
+  }, [viewMode, countyRiskLookup, hoveredRegionId])
 
   const getFill = useCallback(
     (id: string) =>
       viewMode === 'county'
         ? getCountyColor(countyRiskLookup.get(id))
         : getStateColor(stateRiskLookup.get(id)),
-    [viewMode],
+    [viewMode, countyRiskLookup],
   )
 
   const handleHover = useCallback(
@@ -41,25 +76,16 @@ export default function MapContainer() {
       if (viewMode === 'county') {
         const county = countyRiskLookup.get(id)
         if (!county) return
-        setHoveredData({
-          title: county.state_abbr ? `${county.county_name}, ${county.state_abbr}` : county.county_name,
-          riskTier: county.biobot_risk_tier,
-          trend: county.biobot_trend,
-          percChange: county.perc_change,
-        })
+        setHoveredData(countyTooltipData(county))
       } else {
         const state = stateRiskLookup.get(id)
         if (!state) return
-        setHoveredData({
-          title: state.state_name,
-          riskTier: state.biobot_risk_tier,
-          trend: state.biobot_trend,
-          percChange: state.perc_change,
-        })
+        setHoveredData(stateTooltipData(state))
       }
+      setHoveredRegionId(id)
       setMousePosition({ x, y })
     },
-    [viewMode],
+    [viewMode, countyRiskLookup],
   )
 
   const handleMove = useCallback((x: number, y: number) => {
@@ -67,6 +93,7 @@ export default function MapContainer() {
   }, [])
 
   const handleLeave = useCallback(() => {
+    setHoveredRegionId(undefined)
     setHoveredData(undefined)
   }, [])
 
@@ -83,6 +110,7 @@ export default function MapContainer() {
     // actually filled.
     borderMesh: viewMode === 'county' ? stateBordersMesh : undefined,
     getFill,
+    dataVersion,
     onHover: handleHover,
     onMove: handleMove,
     onLeave: handleLeave,

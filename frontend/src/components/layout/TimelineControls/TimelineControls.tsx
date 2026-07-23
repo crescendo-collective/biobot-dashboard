@@ -1,45 +1,36 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import DateRangePicker from './DateRangePicker'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  addMonths,
   addWeeks,
   diffInWeeks,
   formatShortDate,
   formatWeekLabel,
+  getWeekEnd,
   getWeekStart,
-  isSameDay,
 } from '@/utils/dateWeeks'
+import type { TimelineDateRange } from '@/types/timeline'
 import './TimelineControls.scss'
 
-// Placeholder bound for the "Total" preset and the earliest the range
-// picker will let someone scroll back to — wire this to the real
-// dataset's actual earliest observation date once that's known.
-const MIN_AVAILABLE_DATE = new Date(2023, 0, 1)
+interface TimelineControlsProps {
+  onSelectedDateChange: (range: TimelineDateRange) => void
+}
 
-export default function TimelineControls() {
+export default function TimelineControls({ onSelectedDateChange }: TimelineControlsProps) {
   const today = useRef(new Date()).current
-  const currentWeekStart = getWeekStart(today)
-
-  const [rangeStart, setRangeStart] = useState<Date>(() => addWeeks(currentWeekStart, -25))
-  const [rangeEnd, setRangeEnd] = useState<Date>(today)
-
-  // BUG FIX: totalWeeks previously always measured from rangeStart to
-  // *today* (currentWeekStart), completely ignoring rangeEnd — so
-  // picking an earlier end date in the range picker had no visible
-  // effect on the slider at all. It now spans to whatever rangeEnd
-  // actually is.
+  // Keep the range stable for this mounted dashboard. Recreating this Date on
+  // every render would also retrigger the map-selection effect below.
+  const rangeStart = useRef(addMonths(today, -3)).current
+  const rangeEnd = today
   const totalWeeks = Math.max(1, diffInWeeks(getWeekStart(rangeStart), getWeekStart(rangeEnd)))
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(totalWeeks)
+  const selectedWeekStart = useMemo(
+    () => addWeeks(getWeekStart(rangeStart), selectedWeekIndex),
+    [rangeStart, selectedWeekIndex],
+  )
 
-  // Changing the overall date range makes the previous handle position
-  // potentially meaningless (or out of bounds) — jump back to the
-  // current/latest week rather than trying to preserve a position that
-  // may no longer make sense against the new range.
   useEffect(() => {
-    setSelectedWeekIndex(totalWeeks)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rangeStart.getTime(), rangeEnd.getTime()])
-
-  const selectedWeekStart = addWeeks(getWeekStart(rangeStart), selectedWeekIndex)
+    onSelectedDateChange({ start: selectedWeekStart, end: getWeekEnd(selectedWeekStart) })
+  }, [onSelectedDateChange, selectedWeekStart])
 
   const trackRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -85,17 +76,6 @@ export default function TimelineControls() {
   return (
     <div className="timeline-controls">
       <div className="timeline-controls-top">
-        <DateRangePicker
-          startDate={rangeStart}
-          endDate={rangeEnd}
-          minDate={MIN_AVAILABLE_DATE}
-          maxDate={today}
-          onChange={(start, end) => {
-            setRangeStart(start)
-            setRangeEnd(end)
-          }}
-        />
-
         <span className="timeline-week-label">
           WEEK: <strong>{formatWeekLabel(selectedWeekStart)}</strong>
         </span>
@@ -131,12 +111,7 @@ export default function TimelineControls() {
           />
         </div>
 
-        {/* Reads "Current" only when the range genuinely ends today —
-           an explicitly-picked earlier end date shows its real date
-           instead, so this label doesn't lie about what's selected. */}
-        <span className="timeline-slider-label">
-          {isSameDay(rangeEnd, today) ? 'Current' : formatShortDate(rangeEnd)}
-        </span>
+        <span className="timeline-slider-label">Current</span>
       </div>
     </div>
   )

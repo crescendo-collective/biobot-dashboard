@@ -38,4 +38,12 @@
       cursor: grabbing;
     }
   }
+
+  // Keep hover color in CSS rather than mutating individual SVG fill
+  // attributes from D3. Native :hover always clears when the pointer exits,
+  // so a county cannot retain the cyan highlight after mouseleave.
+  .map-region:hover {
+    fill: var(--accent-cyan) !important;
+    stroke-width: 1px !important;
+  }
 }

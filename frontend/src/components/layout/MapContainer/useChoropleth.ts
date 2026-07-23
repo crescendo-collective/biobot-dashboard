@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import * as d3 from 'd3'
 import type { GeoFeatureCollection } from './geography'
-import { HOVER_HIGHLIGHT_FILL } from './colors'
 
 export interface UseChoroplethOptions {
   /** The polygons to render — countyFeatures.features or
@@ -19,6 +18,8 @@ export interface UseChoroplethOptions {
    * already are the state boundaries). */
   borderMesh?: unknown
   getFill: (id: string) => string
+  /** Changes whenever the timeline selects a different data snapshot. */
+  dataVersion: string
   onHover: (id: string, x: number, y: number) => void
   onMove: (x: number, y: number) => void
   onLeave: () => void
@@ -36,7 +37,6 @@ export interface ChoroplethControls {
 
 const ZOOM_STEP = 1.4
 const ZOOM_EXTENT: [number, number] = [1, 8]
-const HOVER_TRANSITION_MS = 120
 
 /**
  * Owns all D3 rendering for the choropleth: projection, region fills,
@@ -70,6 +70,16 @@ export function useChoropleth(
   optionsRef.current = options
 
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+
+  // The timeline changes only a region's fill data, not its geometry.
+  // Update those paths in place so the current zoom/pan position remains intact.
+  useEffect(() => {
+    const svgEl = svgRef.current
+    if (!svgEl) return
+    d3.select(svgEl)
+      .selectAll<SVGPathElement, any>('.map-regions .map-region')
+      .attr('fill', (d) => options.getFill(String(d.id)))
+  }, [options.dataVersion, options.getFill, svgRef])
 
   useEffect(() => {
     const container = containerRef.current
@@ -128,29 +138,13 @@ export function useChoropleth(
           const id = String(d.id)
           optionsRef.current.onHover(id, event.clientX - rect.left, event.clientY - rect.top)
 
-          d3.select(this)
-            .raise()
-            .transition()
-            .duration(HOVER_TRANSITION_MS)
-            .attr('stroke-width', 1)
-            .attr('fill', HOVER_HIGHLIGHT_FILL)
         })
         .on('mousemove', function (event) {
           const rect = container!.getBoundingClientRect()
           optionsRef.current.onMove(event.clientX - rect.left, event.clientY - rect.top)
         })
-        .on('mouseleave', function (_event, d: any) {
+        .on('mouseleave', function () {
           optionsRef.current.onLeave()
-
-          d3.select(this)
-            .transition()
-            .duration(HOVER_TRANSITION_MS)
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 0.3)
-            // Restore via getFill rather than a remembered value — it's
-            // already the single source of truth for what this
-            // region's color should be.
-            .attr('fill', optionsRef.current.getFill(String(d.id)))
         })
 
       if (borderMesh) {

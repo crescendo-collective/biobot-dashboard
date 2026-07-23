@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  addMonths,
-  addYears,
-  formatISODate,
-  isSameDay,
-  startOfDay,
-} from '@/utils/dateWeeks'
+import { DayPicker, type DateRange } from '@daypicker/react'
+import '@daypicker/react/style.css'
+import { addMonths, addYears, formatISODate } from '@/utils/dateWeeks'
 import './DateRangePicker.scss'
 
 export interface DateRangePickerProps {
@@ -18,15 +14,9 @@ export interface DateRangePickerProps {
   onChange: (start: Date, end: Date) => void
 }
 
-const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-]
-
 interface PresetOption {
   label: string
-  getRange: (maxDate: Date, minDate: Date) => [Date, Date]
+  getRange: (maxDate: Date) => [Date, Date]
 }
 
 const PRESETS: PresetOption[] = [
@@ -34,33 +24,6 @@ const PRESETS: PresetOption[] = [
   { label: 'Last 6 Months', getRange: (max) => [addMonths(max, -6), max] },
   { label: 'Last Year', getRange: (max) => [addYears(max, -1), max] },
 ]
-
-/** Days for a single calendar month grid, including the leading/trailing
- * days from adjacent months needed to fill out full weeks. */
-function getMonthGrid(monthDate: Date): Array<{ date: Date; inMonth: boolean }> {
-  const year = monthDate.getFullYear()
-  const month = monthDate.getMonth()
-  const firstOfMonth = new Date(year, month, 1)
-  const startWeekday = firstOfMonth.getDay()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-
-  const cells: Array<{ date: Date; inMonth: boolean }> = []
-
-  for (let i = 0; i < startWeekday; i++) {
-    const d = new Date(year, month, i - startWeekday + 1)
-    cells.push({ date: d, inMonth: false })
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    cells.push({ date: new Date(year, month, day), inMonth: true })
-  }
-  // Pad to a multiple of 7 for a clean grid.
-  while (cells.length % 7 !== 0) {
-    const last = cells[cells.length - 1].date
-    cells.push({ date: new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1), inMonth: false })
-  }
-
-  return cells
-}
 
 export default function DateRangePicker({
   startDate,
@@ -73,12 +36,9 @@ export default function DateRangePicker({
   // In-progress selection while the popover is open — committed (via
   // onChange) once both ends are picked, so a half-made selection
   // doesn't affect the actual timeline until it's complete.
-  const [draftStart, setDraftStart] = useState<Date | null>(null)
-  const [draftEnd, setDraftEnd] = useState<Date | null>(null)
-  const [leftMonth, setLeftMonth] = useState<Date>(() => startOfDay(new Date(startDate.getFullYear(), startDate.getMonth(), 1)))
+  const [draftRange, setDraftRange] = useState<DateRange | undefined>(undefined)
 
   const rootRef = useRef<HTMLDivElement>(null)
-  const today = startOfDay(new Date())
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -91,79 +51,26 @@ export default function DateRangePicker({
   }, [isOpen])
 
   const openPicker = () => {
-    setDraftStart(null)
-    setDraftEnd(null)
-    setLeftMonth(startOfDay(new Date(startDate.getFullYear(), startDate.getMonth(), 1)))
+    setDraftRange({ from: startDate, to: endDate })
     setIsOpen(true)
   }
 
   const applyPreset = (preset: PresetOption) => {
-    const [start, end] = preset.getRange(maxDate, minDate)
+    const [start, end] = preset.getRange(maxDate)
     onChange(start, end)
     setIsOpen(false)
   }
 
-  const handleDayClick = (day: Date) => {
-    if (day.getTime() < minDate.getTime() || day.getTime() > maxDate.getTime()) return
-
-    if (!draftStart || draftEnd) {
-      // Starting a fresh selection.
-      setDraftStart(day)
-      setDraftEnd(null)
-      return
+  const handleSelect = (range: DateRange | undefined) => {
+    setDraftRange(range)
+    // DayPicker calls onSelect after each click — `to` only lands once
+    // the second day is picked, so this only commits (and closes the
+    // popover) once the range is actually complete.
+    if (range?.from && range?.to) {
+      onChange(range.from, range.to)
+      setIsOpen(false)
     }
-
-    // Second click completes the range.
-    const [rangeStart, rangeEnd] = day.getTime() < draftStart.getTime() ? [day, draftStart] : [draftStart, day]
-    setDraftStart(rangeStart)
-    setDraftEnd(rangeEnd)
-    onChange(rangeStart, rangeEnd)
-    setIsOpen(false)
   }
-
-  const displayStart = draftStart ?? startDate
-  const displayEnd = draftEnd ?? (draftStart ? draftStart : endDate)
-
-  const isInRange = (day: Date) =>
-    day.getTime() >= displayStart.getTime() && day.getTime() <= displayEnd.getTime()
-
-  const rightMonth = addMonths(leftMonth, 1)
-
-  const renderMonth = (monthDate: Date) => (
-    <div className="date-picker-month">
-      <div className="date-picker-month-grid-header">
-        {WEEKDAY_LABELS.map((label) => (
-          <span key={label}>{label}</span>
-        ))}
-      </div>
-      <div className="date-picker-month-grid">
-        {getMonthGrid(monthDate).map(({ date, inMonth }) => {
-          const disabled = date.getTime() < minDate.getTime() || date.getTime() > maxDate.getTime()
-          const selected = isSameDay(date, displayStart) || isSameDay(date, displayEnd)
-          return (
-            <button
-              key={date.toISOString()}
-              type="button"
-              className={[
-                'date-picker-day',
-                !inMonth && 'is-outside',
-                disabled && 'is-disabled',
-                inMonth && isInRange(date) && 'is-in-range',
-                selected && 'is-selected',
-                isSameDay(date, today) && 'is-today',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              disabled={disabled}
-              onClick={() => handleDayClick(date)}
-            >
-              {date.getDate()}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
 
   return (
     <div className="date-range-picker" ref={rootRef}>
@@ -188,51 +95,16 @@ export default function DateRangePicker({
           </div>
 
           <div className="date-picker-calendars">
-            <div className="date-picker-calendar-header">
-              <button
-                type="button"
-                className="date-picker-nav"
-                onClick={() => setLeftMonth((m) => addYears(m, -1))}
-                aria-label="Previous year"
-              >
-                «
-              </button>
-              <button
-                type="button"
-                className="date-picker-nav"
-                onClick={() => setLeftMonth((m) => addMonths(m, -1))}
-                aria-label="Previous month"
-              >
-                ‹
-              </button>
-              <span className="date-picker-month-label">
-                {MONTH_NAMES[leftMonth.getMonth()]} {leftMonth.getFullYear()}
-              </span>
-              <span className="date-picker-month-label">
-                {MONTH_NAMES[rightMonth.getMonth()]} {rightMonth.getFullYear()}
-              </span>
-              <button
-                type="button"
-                className="date-picker-nav"
-                onClick={() => setLeftMonth((m) => addMonths(m, 1))}
-                aria-label="Next month"
-              >
-                ›
-              </button>
-              <button
-                type="button"
-                className="date-picker-nav"
-                onClick={() => setLeftMonth((m) => addYears(m, 1))}
-                aria-label="Next year"
-              >
-                »
-              </button>
-            </div>
-
-            <div className="date-picker-calendar-grids">
-              {renderMonth(leftMonth)}
-              {renderMonth(rightMonth)}
-            </div>
+            <DayPicker
+              mode="range"
+              numberOfMonths={2}
+              defaultMonth={startDate}
+              selected={draftRange}
+              onSelect={handleSelect}
+              disabled={{ before: minDate, after: maxDate }}
+              startMonth={minDate}
+              endMonth={maxDate}
+            />
           </div>
         </div>
       )}

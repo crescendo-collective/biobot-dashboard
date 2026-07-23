@@ -1,4 +1,4 @@
-import type { CountyData, StateData } from '@/types/map'
+import type { CountySnapshot, StateData } from '@/types/map'
 
 // Ordered Minimal → Severe. Exported so a future legend component can
 // render swatches in the same order without redefining the list.
@@ -37,7 +37,7 @@ export function getTierColor(tier: RiskTier): string {
 
 /** County fill color for the map choropleth. Falls back to a neutral
  * gray when a county has no matching data yet. */
-export function getCountyColor(county?: CountyData): string {
+export function getCountyColor(county?: CountySnapshot): string {
   if (!county) return NO_DATA_FILL
   return getTierColor(county.biobot_risk_tier) ?? NO_DATA_FILL
 }

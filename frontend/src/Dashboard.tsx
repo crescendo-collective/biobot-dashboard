@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
@@ -7,6 +7,8 @@ import MapLegend from '@/components/layout/MapContainer/MapLegend'
 import InsightPanel from '@/components/layout/InsightPanel'
 import type { Insight } from '@/components/layout/InsightPanel'
 import { pathogens, DEFAULT_DISEASE_ID } from '@/data/trackers'
+import type { TimelineDateRange } from '@/types/timeline'
+import { getWeekEnd, getWeekStart } from '@/utils/dateWeeks'
 import './App.scss'
 
 const risk: Insight = {
@@ -34,6 +36,11 @@ export default function Dashboard() {
   // Available to any future API call as-is: useParams().disease.
   const { disease } = useParams<{ disease: string }>()
   const navigate = useNavigate()
+  const [selectedMapDateRange, setSelectedMapDateRange] = useState<TimelineDateRange>(() => {
+    const today = new Date()
+    const start = getWeekStart(today)
+    return { start, end: getWeekEnd(start) }
+  })
 
   const validPathogenIds = useMemo(() => new Set(pathogens.items.map((item) => item.id)), [])
 
@@ -49,9 +56,13 @@ export default function Dashboard() {
     navigate(`/${id}`)
   }
 
+  const handleSelectedDateChange = useCallback((range: TimelineDateRange) => {
+    setSelectedMapDateRange(range)
+  }, [])
+
   return (
     <div className="app">
-      <Header />
+      <Header onSelectedDateChange={handleSelectedDateChange} />
       <div className="app-body">
         <Sidebar
           pathogens={pathogens}
@@ -59,7 +70,7 @@ export default function Dashboard() {
           onSelectPathogen={handleSelectPathogen}
         />
         <div>
-          <MapContainer />
+          <MapContainer selectedDateRange={selectedMapDateRange} />
           <MapLegend />
         </div>
         <InsightPanel risk={risk} forecast={forecast} />
