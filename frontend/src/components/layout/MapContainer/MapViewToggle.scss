@@ -20,7 +20,7 @@
   font-weight: 600;
   color: var(--text-muted);
   transition: background-color 0.15s ease, color 0.15s ease;
-  border: solid 1px var(--text-dim);
+  border: 1px solid var(--border);
   &:first-of-type {
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
