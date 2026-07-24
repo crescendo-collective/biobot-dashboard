@@ -1,4 +1,4 @@
-import type { CountyData } from '@/types/map'
+import type { CountySnapshot } from '@/types/map'
 import { feature } from 'topojson-client'
 import us from 'us-atlas/counties-10m.json'
 import type { GeometryCollection, Topology } from 'topojson-specification'
@@ -20,7 +20,7 @@ const riskTiers = [
   { tier: 'Severe', ordinal: 6 },
 ] as const
 
-export const countyRiskLookup = new Map<string, CountyData>(
+export const countyRiskLookup = new Map<string, CountySnapshot>(
   counties.map((county, index) => {
     const risk = riskTiers[index % riskTiers.length]
     const countyFips = county.id as string

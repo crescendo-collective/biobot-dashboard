@@ -1,0 +1,127 @@
+.date-range-picker {
+  position: relative;
+}
+
+.date-range-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+
+  &:hover {
+    border-color: var(--accent-cyan);
+  }
+}
+
+.date-range-picker-arrow {
+  color: var(--text-muted);
+}
+
+.date-range-picker-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  display: flex;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.date-picker-presets {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  border-right: 1px solid var(--border);
+  min-width: 130px;
+
+  button {
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--border);
+    }
+  }
+}
+
+.date-picker-calendars {
+  padding: 12px 16px 16px;
+
+  // @daypicker/react ships its own stylesheet (imported in
+  // DateRangePicker.tsx) built around these CSS custom properties —
+  // themed here rather than by overriding the library's internal
+  // class names directly, since the variable names are the stable,
+  // documented public API and overriding structural classes risks
+  // fighting the library's own layout.
+  .rdp-root {
+    --rdp-accent-color: var(--accent-cyan);
+    --rdp-accent-background-color: color-mix(in srgb, var(--accent-cyan) 18%, transparent);
+    --rdp-today-color: var(--accent-cyan);
+    --rdp-disabled-opacity: 0.35;
+    --rdp-outside-opacity: 0.35;
+    --rdp-day_button-border-radius: 6px;
+    --rdp-day-width: 34px;
+    --rdp-day-height: 34px;
+    --rdp-day_button-width: 30px;
+    --rdp-day_button-height: 30px;
+    --rdp-months-gap: 20px;
+    --rdp-nav-height: 28px;
+    --rdp-nav_button-width: 22px;
+    --rdp-nav_button-height: 22px;
+    --rdp-range_start-color: #0a0a08;
+    --rdp-range_end-color: #0a0a08;
+    --rdp-weekday-opacity: 0.7;
+
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 12px;
+  }
+
+  .rdp-month_caption {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .rdp-weekday {
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+
+  .rdp-button_previous,
+  .rdp-button_next {
+    color: var(--text-muted);
+    border-radius: 4px;
+
+    &:hover:not(:disabled) {
+      background: var(--border);
+      color: var(--text);
+    }
+  }
+
+  .rdp-day_button:hover:not([disabled]) {
+    background: var(--border);
+  }
+
+  .rdp-selected {
+    font-size: inherit;
+
+    .rdp-day_button {
+      font-weight: normal;
+    }
+  }
+}

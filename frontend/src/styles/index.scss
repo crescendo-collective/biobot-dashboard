@@ -45,6 +45,12 @@
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* UI chrome accent — deliberately separate from the risk-tier scale
+     below. Used for things like the active state of the County/State
+     toggle; reusing a tier color there would read as "this button is
+     risk-colored", which isn't what it means. */
+  --accent-amber: #f5a623;
 }
 
 /* Risk-tier scale (theme-independent) — single source of truth for both

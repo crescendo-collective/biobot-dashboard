@@ -80,7 +80,7 @@ On the **embedding site**, the iframe tag looks like:
 
 ```html
 <iframe
-  src="https://your-dashboard-domain.com"
+  src="https://your-dashboard-domain.com/rsv"
   width="100%"
   height="700"
   style="border: 0;"

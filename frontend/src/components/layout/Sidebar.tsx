@@ -10,7 +10,7 @@ export interface TrackerGroup {
   items: TrackerItem[]
 }
 
-const VISIBLE_LIMIT = 4
+const VISIBLE_LIMIT = 5
 
 interface TrackerListProps {
   title: string
